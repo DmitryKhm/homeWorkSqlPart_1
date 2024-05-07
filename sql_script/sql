@@ -1,0 +1,21 @@
+WITH max_transactions AS (
+    SELECT
+        client_id,
+        amount AS max_transaction_amount,
+        created_on AS max_transaction_date,
+        ROW_NUMBER() OVER (PARTITION BY client_id ORDER BY ABS(amount) DESC, created_on DESC) AS rn
+    FROM transaction
+)
+
+
+SELECT
+    c.client_id,
+    c.first_name,
+    c.last_name,
+    c.phone,
+    c.email,
+    t.max_transaction_amount,
+    t.max_transaction_date
+FROM client c
+         JOIN max_transactions t ON c.client_id = t.client_id
+WHERE t.rn = 1;
